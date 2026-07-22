@@ -1,0 +1,37 @@
+schema_version: "0.5.0"
+record_type: authorization_downstream_handoff
+
+handoff_id: adh-invalid-royalty-order
+bridge_id: cpab-20260722-0503
+authorization_id: aar-20260722-0301
+
+execution_evidence_ids:
+  - aee-20260722-0402
+
+destinations:
+  audit:
+    status: pending
+    record_refs:
+      - audit:authorization-execution-1042-01
+
+  dispute:
+    status: not_applicable
+    record_refs: []
+
+  responsibility:
+    status: completed
+    record_refs:
+      - responsibility:procurement-execution-1042-01
+
+  royalty:
+    status: completed
+    record_refs:
+      - royalty:purchase-order-7788
+
+settlement_gate:
+  status: held
+  reason_code: authorization_violation_under_review
+  unresolved_dispute_refs:
+    - dispute:revoked-attempt-1042-02
+
+emitted_at: "2026-07-22T01:22:00Z"
