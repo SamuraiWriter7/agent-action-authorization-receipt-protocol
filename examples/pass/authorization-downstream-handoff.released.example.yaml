@@ -1,0 +1,36 @@
+schema_version: "0.5.0"
+record_type: authorization_downstream_handoff
+
+handoff_id: adh-20260722-0501
+bridge_id: cpab-20260722-0501
+authorization_id: aar-20260722-0301
+
+execution_evidence_ids:
+  - aee-20260722-0401
+
+destinations:
+  audit:
+    status: completed
+    record_refs:
+      - audit:authorization-execution-1042-01
+
+  dispute:
+    status: not_applicable
+    record_refs: []
+
+  responsibility:
+    status: completed
+    record_refs:
+      - responsibility:procurement-execution-1042-01
+
+  royalty:
+    status: ready
+    record_refs:
+      - royalty-input:purchase-order-7788
+
+settlement_gate:
+  status: released
+  reason_code: null
+  unresolved_dispute_refs: []
+
+emitted_at: "2026-07-22T01:13:00Z"
