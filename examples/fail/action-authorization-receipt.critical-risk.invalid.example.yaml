@@ -1,0 +1,87 @@
+schema_version: "0.3.0"
+
+authorization_id: aar-invalid-critical-risk
+request_id: req-invalid-critical-risk
+agent_id: agent-support-02
+
+requested_action:
+  action_type: customer_record.publish
+  summary: Positive authorization incorrectly retains critical residual risk.
+  tool_id: tool-collaboration-api
+  target_type: customer_record
+  target_id: customer-record-critical
+  destination_id: external-workspace-09
+  data_classes:
+    - customer.personal
+
+decision: authorized
+
+decision_reason:
+  code: invalid_critical_risk
+  summary: This example must fail.
+  evidence_refs: []
+
+authorized_by:
+  actor_type: human
+  actor_id: user:privacy-officer-01
+  authority_basis: delegation:privacy-office
+
+authorized_scope:
+  tools:
+    - tool-collaboration-api
+  resources:
+    - customer-record-critical
+  operations:
+    - customer_record.publish
+  data_classes:
+    - customer.personal
+
+constraints:
+  maximum_cost: null
+  maximum_duration_seconds: 60
+  allowed_destinations:
+    - external-workspace-09
+  prohibited_actions: []
+  execution_count: 1
+
+policy_bindings:
+  - policy_id: data-sharing-policy
+    policy_version: v2
+    rule_id: human-approval-exception
+    result: allow
+    enforcement: applied
+    evaluated_by: policy-engine-main
+    evaluated_at: "2026-07-22T01:12:00Z"
+    override_authority_ref: null
+    evidence_refs: []
+
+human_review:
+  required: true
+  status: approved
+  review_id: review-critical-risk
+  reviewer_id: user:privacy-officer-01
+  reviewed_at: "2026-07-22T01:12:30Z"
+  rationale: Approved for testing, but residual risk remains critical.
+  evidence_refs: []
+
+risk_assessment:
+  assessment_id: risk-invalid-critical
+  assessed_by: risk-engine-main
+  assessed_at: "2026-07-22T01:11:30Z"
+  risk_level: critical
+  score: 99
+  categories:
+    - privacy.disclosure
+  mitigations:
+    - human.review
+  residual_risk_level: critical
+
+context_bindings:
+  origin_reference: origin:req-invalid-critical-risk
+  trace_reference: trace:req-invalid-critical-risk
+  precedence_reference: null
+  human_axis_reference: human-axis:privacy-control
+  handoff_reference: null
+
+issued_at: "2026-07-22T01:13:00Z"
+expires_at: "2026-07-22T01:43:00Z"
