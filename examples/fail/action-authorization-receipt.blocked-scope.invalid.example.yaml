@@ -1,0 +1,40 @@
+schema_version: "0.2.0"
+
+authorization_id: aar-20260722-invalid-blocked
+request_id: req-invalid-blocked
+agent_id: agent-support-02
+
+requested_action:
+  action_type: customer_record.publish
+  summary: A denied action incorrectly retains an executable scope.
+
+decision: denied
+
+decision_reason:
+  code: invalid_blocked_scope_test
+  summary: This example must fail because denied decisions cannot retain executable authority.
+  evidence_refs: []
+
+authorized_by:
+  actor_type: policy_engine
+  actor_id: policy-engine-main
+  authority_basis: policy:data-boundary-v2
+
+authorized_scope:
+  tools:
+    - tool-collaboration-api
+  resources: []
+  operations:
+    - customer_record.publish
+  data_classes: []
+
+constraints:
+  maximum_cost: null
+  maximum_duration_seconds: null
+  allowed_destinations: []
+  prohibited_actions:
+    - customer_record.publish
+  execution_count: 1
+
+issued_at: "2026-07-22T00:49:00Z"
+expires_at: null
