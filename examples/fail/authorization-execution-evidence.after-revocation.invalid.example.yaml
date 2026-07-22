@@ -1,0 +1,39 @@
+schema_version: "0.4.0"
+
+execution_evidence_id: aee-invalid-after-revocation
+authorization_id: aar-20260722-0301
+request_id: req-purchase-1042
+agent_id: agent-procurement-01
+execution_id: exec-invalid-after-revocation
+
+execution_status: succeeded
+
+observed_action:
+  action_type: purchase_order.create
+  tool_id: tool-procurement-api
+  target_id: vendor-acme-industrial
+  destination_id: vendor-acme-industrial
+  data_classes:
+    - procurement.non_personal
+  actual_cost:
+    currency: JPY
+    amount: "8400"
+  actual_duration_seconds: 20
+  parameters_digest: sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+authorization_match:
+  status: matched
+  checked_by: execution-gate-main
+  checked_at: "2026-07-22T01:21:59Z"
+  violations: []
+
+execution_usage:
+  consumed: true
+  sequence_number: 2
+  used_before: 1
+  used_after: 2
+
+started_at: "2026-07-22T01:22:00Z"
+completed_at: "2026-07-22T01:22:20Z"
+outcome_refs: []
+recorded_at: "2026-07-22T01:22:21Z"
