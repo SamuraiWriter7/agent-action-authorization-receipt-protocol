@@ -1,0 +1,22 @@
+schema_version: "0.4.0"
+
+revocation_id: arr-invalid-supersession
+authorization_id: aar-20260722-0301
+revocation_type: superseded
+
+initiated_by:
+  actor_type: system
+  actor_id: authorization-lifecycle-main
+  authority_basis: policy:authorization-supersession-v1
+  delegation_id: null
+
+reason:
+  code: replacement_receipt_issued
+  summary: This example must fail because no superseding authorization is identified.
+  evidence_refs: []
+
+issued_at: "2026-07-22T01:25:00Z"
+effective_at: "2026-07-22T01:25:00Z"
+
+superseding_authorization_id: null
+affected_execution_ids: []
