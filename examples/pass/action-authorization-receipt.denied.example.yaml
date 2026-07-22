@@ -1,6 +1,6 @@
-schema_version: "0.2.0"
+schema_version: "0.3.0"
 
-authorization_id: aar-20260722-0202
+authorization_id: aar-20260722-0302
 request_id: req-disclosure-3008
 agent_id: agent-support-02
 
@@ -19,10 +19,11 @@ requested_action:
 decision: denied
 
 decision_reason:
-  code: external_disclosure_prohibited
-  summary: The requested destination and data classes are outside the authorized boundary.
+  code: applied_data_boundary_denial
+  summary: An applied data-boundary policy prohibits publishing the requested data classes to the external destination.
   evidence_refs:
     - policy:data-boundary-v2
+    - risk:risk-assessment-0302
 
 authorized_by:
   actor_type: policy_engine
@@ -43,5 +44,46 @@ constraints:
     - customer_record.publish
   execution_count: 0
 
-issued_at: "2026-07-22T00:46:00Z"
+policy_bindings:
+  - policy_id: external-data-boundary-policy
+    policy_version: v2
+    rule_id: prohibit-confidential-external-publish
+    result: deny
+    enforcement: applied
+    evaluated_by: policy-engine-main
+    evaluated_at: "2026-07-22T01:05:00Z"
+    override_authority_ref: null
+    evidence_refs:
+      - policy:data-boundary-v2#prohibit-confidential-external-publish
+
+human_review:
+  required: false
+  status: not_required
+  review_id: null
+  reviewer_id: null
+  reviewed_at: null
+  rationale: null
+  evidence_refs: []
+
+risk_assessment:
+  assessment_id: risk-assessment-0302
+  assessed_by: risk-engine-main
+  assessed_at: "2026-07-22T01:04:30Z"
+  risk_level: critical
+  score: 96
+  categories:
+    - privacy.disclosure
+    - external.destination
+  mitigations:
+    - execution.block
+  residual_risk_level: high
+
+context_bindings:
+  origin_reference: origin:request-origin-3008
+  trace_reference: trace:trace-20260722-9001
+  precedence_reference: precedence:data-boundary-v2
+  human_axis_reference: human-axis:customer-privacy-control
+  handoff_reference: null
+
+issued_at: "2026-07-22T01:05:30Z"
 expires_at: null
