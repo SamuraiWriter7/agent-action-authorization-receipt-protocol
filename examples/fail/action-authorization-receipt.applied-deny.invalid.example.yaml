@@ -1,0 +1,87 @@
+schema_version: "0.3.0"
+
+authorization_id: aar-invalid-applied-deny
+request_id: req-invalid-applied-deny
+agent_id: agent-procurement-01
+
+requested_action:
+  action_type: purchase_order.create
+  summary: Positive authorization incorrectly retains an applied deny policy result.
+  tool_id: tool-procurement-api
+  target_type: vendor_account
+  target_id: vendor-acme-industrial
+  destination_id: vendor-acme-industrial
+  data_classes:
+    - procurement.non_personal
+
+decision: authorized
+
+decision_reason:
+  code: invalid_applied_deny
+  summary: This example must fail.
+  evidence_refs: []
+
+authorized_by:
+  actor_type: policy_engine
+  actor_id: policy-engine-main
+  authority_basis: policy:procurement-v3
+
+authorized_scope:
+  tools:
+    - tool-procurement-api
+  resources:
+    - vendor-acme-industrial
+  operations:
+    - purchase_order.create
+  data_classes:
+    - procurement.non_personal
+
+constraints:
+  maximum_cost: null
+  maximum_duration_seconds: 300
+  allowed_destinations:
+    - vendor-acme-industrial
+  prohibited_actions: []
+  execution_count: 1
+
+policy_bindings:
+  - policy_id: procurement-policy
+    policy_version: v3
+    rule_id: blocked-vendor-rule
+    result: deny
+    enforcement: applied
+    evaluated_by: policy-engine-main
+    evaluated_at: "2026-07-22T01:10:00Z"
+    override_authority_ref: null
+    evidence_refs: []
+
+human_review:
+  required: false
+  status: not_required
+  review_id: null
+  reviewer_id: null
+  reviewed_at: null
+  rationale: null
+  evidence_refs: []
+
+risk_assessment:
+  assessment_id: risk-invalid-deny
+  assessed_by: risk-engine-main
+  assessed_at: "2026-07-22T01:09:30Z"
+  risk_level: medium
+  score: 40
+  categories:
+    - financial.commitment
+  mitigations:
+    - budget.cap
+  residual_risk_level: low
+
+context_bindings:
+  origin_reference: origin:req-invalid-applied-deny
+  trace_reference: trace:req-invalid-applied-deny
+  precedence_reference: null
+  human_axis_reference: null
+  handoff_reference: null
+
+issued_at: "2026-07-22T01:10:10Z"
+expires_at: "2026-07-22T01:40:10Z"
