@@ -43,3 +43,7 @@ jobs:
       - name: Validate execution and revocation records
         run: |
           python scripts/validate_execution_records.py
+
+      - name: Validate protocol bridges and handoffs
+        run: |
+          python scripts/validate_bridge_records.py
