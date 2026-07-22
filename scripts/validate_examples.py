@@ -6,6 +6,7 @@ from __future__ import annotations
 import json
 import sys
 from datetime import datetime
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any
 
@@ -24,6 +25,25 @@ SCHEMA_PATH = (
 
 PASS_DIR = ROOT / "examples" / "pass"
 FAIL_DIR = ROOT / "examples" / "fail"
+
+POSITIVE_DECISIONS = {
+    "authorized",
+    "conditionally_authorized",
+}
+
+BLOCKING_DECISIONS = {
+    "human_review_required",
+    "deferred",
+    "denied",
+    "revoked",
+}
+
+SCOPE_FIELDS = (
+    "tools",
+    "resources",
+    "operations",
+    "data_classes",
+)
 
 
 def load_document(path: Path) -> Any:
@@ -77,6 +97,27 @@ def parse_timestamp(value: str) -> datetime:
         )
 
     return parsed
+
+
+def parse_amount(value: Any) -> Decimal | None:
+    """Parse a schema-valid decimal amount."""
+    if not isinstance(value, str):
+        return None
+
+    try:
+        return Decimal(value)
+    except InvalidOperation:
+        return None
+
+
+def all_empty_scope(
+    scope: dict[str, Any],
+) -> bool:
+    """Return whether every authorized scope array is empty."""
+    return all(
+        not scope.get(field)
+        for field in SCOPE_FIELDS
+    )
 
 
 def semantic_errors(
@@ -133,10 +174,208 @@ def semantic_errors(
                 "valid for delegated_agent"
             )
 
+    decision = document.get("decision")
+    action = document.get("requested_action")
+    scope = document.get("authorized_scope")
+    constraints = document.get("constraints")
+
+    if not isinstance(action, dict):
+        return errors
+
+    if not isinstance(scope, dict):
+        return errors
+
+    if not isinstance(constraints, dict):
+        return errors
+
+    action_type = action.get("action_type")
+    tool_id = action.get("tool_id")
+    target_id = action.get("target_id")
+    destination_id = action.get("destination_id")
+    requested_data_classes = action.get(
+        "data_classes",
+        [],
+    )
+
+    tools = scope.get("tools", [])
+    resources = scope.get("resources", [])
+    operations = scope.get("operations", [])
+    authorized_data_classes = scope.get(
+        "data_classes",
+        [],
+    )
+
+    prohibited_actions = constraints.get(
+        "prohibited_actions",
+        [],
+    )
+
+    allowed_destinations = constraints.get(
+        "allowed_destinations",
+        [],
+    )
+
+    execution_count = constraints.get(
+        "execution_count"
+    )
+
+    if decision in POSITIVE_DECISIONS:
+        if not operations:
+            errors.append(
+                "authorized_scope.operations must not "
+                "be empty for a positive decision"
+            )
+
+        if action_type not in operations:
+            errors.append(
+                "requested_action.action_type is outside "
+                "authorized_scope.operations"
+            )
+
+        if (
+            isinstance(tool_id, str)
+            and tool_id not in tools
+        ):
+            errors.append(
+                "requested_action.tool_id is outside "
+                "authorized_scope.tools"
+            )
+
+        if (
+            isinstance(target_id, str)
+            and target_id not in resources
+        ):
+            errors.append(
+                "requested_action.target_id is outside "
+                "authorized_scope.resources"
+            )
+
+        if (
+            isinstance(destination_id, str)
+            and destination_id
+            not in allowed_destinations
+        ):
+            errors.append(
+                "requested_action.destination_id is outside "
+                "constraints.allowed_destinations"
+            )
+
+        for data_class in requested_data_classes:
+            if data_class not in authorized_data_classes:
+                errors.append(
+                    "requested_action.data_classes contains "
+                    "an unauthorized data class: "
+                    f"{data_class}"
+                )
+
+        if action_type in prohibited_actions:
+            errors.append(
+                "requested_action.action_type is listed in "
+                "constraints.prohibited_actions"
+            )
+
+        if (
+            not isinstance(execution_count, int)
+            or execution_count < 1
+        ):
+            errors.append(
+                "constraints.execution_count must be "
+                "at least 1 for a positive decision"
+            )
+
+    if decision in BLOCKING_DECISIONS:
+        if not all_empty_scope(scope):
+            errors.append(
+                "authorized_scope must be empty "
+                "for a blocking decision"
+            )
+
+        if execution_count != 0:
+            errors.append(
+                "constraints.execution_count must be 0 "
+                "for a blocking decision"
+            )
+
+    estimated_cost = action.get("estimated_cost")
+    maximum_cost = constraints.get("maximum_cost")
+
+    if (
+        decision in POSITIVE_DECISIONS
+        and isinstance(estimated_cost, dict)
+    ):
+        if maximum_cost is None:
+            estimated_amount = parse_amount(
+                estimated_cost.get("amount")
+            )
+
+            if (
+                estimated_amount is not None
+                and estimated_amount > 0
+            ):
+                errors.append(
+                    "a positive-cost action requires "
+                    "constraints.maximum_cost"
+                )
+
+        elif isinstance(maximum_cost, dict):
+            estimated_currency = estimated_cost.get(
+                "currency"
+            )
+
+            maximum_currency = maximum_cost.get(
+                "currency"
+            )
+
+            if estimated_currency != maximum_currency:
+                errors.append(
+                    "requested_action.estimated_cost currency "
+                    "must match constraints.maximum_cost "
+                    "currency"
+                )
+
+            estimated_amount = parse_amount(
+                estimated_cost.get("amount")
+            )
+
+            maximum_amount = parse_amount(
+                maximum_cost.get("amount")
+            )
+
+            if (
+                estimated_amount is not None
+                and maximum_amount is not None
+                and estimated_amount > maximum_amount
+            ):
+                errors.append(
+                    "requested_action.estimated_cost exceeds "
+                    "constraints.maximum_cost"
+                )
+
+    estimated_duration = action.get(
+        "estimated_duration_seconds"
+    )
+
+    maximum_duration = constraints.get(
+        "maximum_duration_seconds"
+    )
+
+    if (
+        decision in POSITIVE_DECISIONS
+        and isinstance(estimated_duration, int)
+        and isinstance(maximum_duration, int)
+        and estimated_duration > maximum_duration
+    ):
+        errors.append(
+            "requested_action.estimated_duration_seconds "
+            "exceeds constraints.maximum_duration_seconds"
+        )
+
     return errors
 
 
-def example_files(directory: Path) -> list[Path]:
+def example_files(
+    directory: Path,
+) -> list[Path]:
     """Return supported example files in deterministic order."""
     files = list(directory.glob("*.yaml"))
     files.extend(directory.glob("*.yml"))
