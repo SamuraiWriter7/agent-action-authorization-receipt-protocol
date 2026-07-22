@@ -1,29 +1,47 @@
-schema_version: "0.1.0"
+schema_version: "0.2.0"
 
-authorization_id: aar-20260722-0001
-request_id: req-purchase-1042
-agent_id: agent-procurement-01
+authorization_id: aar-20260722-0202
+request_id: req-disclosure-3008
+agent_id: agent-support-02
 
 requested_action:
-  action_type: purchase_order.create
-  summary: Create a purchase order for replacement safety gloves.
-  target_type: vendor_account
-  target_id: vendor-acme-industrial
-  parameters_digest: sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  action_type: customer_record.publish
+  summary: Publish a customer support record to an external collaboration space.
+  tool_id: tool-collaboration-api
+  target_type: customer_record
+  target_id: customer-record-8832
+  destination_id: external-workspace-09
+  data_classes:
+    - customer.personal
+    - support.confidential
+  estimated_duration_seconds: 30
 
-decision: conditionally_authorized
+decision: denied
 
 decision_reason:
-  code: budget_and_policy_match
-  summary: The requested purchase is within the delegated budget and approved procurement category.
+  code: external_disclosure_prohibited
+  summary: The requested destination and data classes are outside the authorized boundary.
   evidence_refs:
-    - policy:procurement-limit-v3
-    - trace:trace-20260722-8841
+    - policy:data-boundary-v2
 
 authorized_by:
-  actor_type: human
-  actor_id: user:operations-manager-07
-  authority_basis: delegation:procurement-2026-q3
+  actor_type: policy_engine
+  actor_id: policy-engine-main
+  authority_basis: policy:data-boundary-v2
 
-issued_at: "2026-07-22T00:35:00Z"
-expires_at: "2026-07-22T01:05:00Z"
+authorized_scope:
+  tools: []
+  resources: []
+  operations: []
+  data_classes: []
+
+constraints:
+  maximum_cost: null
+  maximum_duration_seconds: null
+  allowed_destinations: []
+  prohibited_actions:
+    - customer_record.publish
+  execution_count: 0
+
+issued_at: "2026-07-22T00:46:00Z"
+expires_at: null
