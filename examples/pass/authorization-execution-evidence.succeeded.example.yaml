@@ -1,0 +1,43 @@
+schema_version: "0.4.0"
+
+execution_evidence_id: aee-20260722-0401
+authorization_id: aar-20260722-0301
+request_id: req-purchase-1042
+agent_id: agent-procurement-01
+execution_id: exec-purchase-1042-01
+
+execution_status: succeeded
+
+observed_action:
+  action_type: purchase_order.create
+  tool_id: tool-procurement-api
+  target_id: vendor-acme-industrial
+  destination_id: vendor-acme-industrial
+  data_classes:
+    - procurement.non_personal
+  actual_cost:
+    currency: JPY
+    amount: "8400"
+  actual_duration_seconds: 118
+  parameters_digest: sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+authorization_match:
+  status: matched
+  checked_by: execution-gate-main
+  checked_at: "2026-07-22T01:09:59Z"
+  violations: []
+
+execution_usage:
+  consumed: true
+  sequence_number: 1
+  used_before: 0
+  used_after: 1
+
+started_at: "2026-07-22T01:10:00Z"
+completed_at: "2026-07-22T01:11:58Z"
+
+outcome_refs:
+  - outcome:purchase-order-7788
+  - trace:execution-trace-1042-01
+
+recorded_at: "2026-07-22T01:12:00Z"
