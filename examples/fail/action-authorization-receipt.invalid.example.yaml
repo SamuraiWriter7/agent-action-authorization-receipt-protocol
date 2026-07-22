@@ -1,0 +1,19 @@
+schema_version: "0.1.0"
+
+authorization_id: aar-20260722-invalid
+request_id: req-invalid-01
+agent_id: agent-demo-01
+
+requested_action:
+  action_type: file.delete
+  summary: Delete a protected audit file.
+
+decision: approved
+
+decision_reason:
+  code: no_reason
+  summary: Invalid example used to confirm rejection.
+  evidence_refs: []
+
+issued_at: "2026-07-22T00:40:00Z"
+expires_at: "2026-07-22T00:30:00Z"
