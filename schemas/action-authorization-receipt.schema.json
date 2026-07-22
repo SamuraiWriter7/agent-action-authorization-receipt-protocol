@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:kazene:agent-action-authorization-receipt-protocol:action-authorization-receipt:0.1.0",
+  "title": "Action Authorization Receipt",
+  "description": "A vendor-neutral receipt recording the decision that governs whether an AI agent action may proceed.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "authorization_id",
+    "request_id",
+    "agent_id",
+    "requested_action",
+    "decision",
+    "decision_reason",
+    "authorized_by",
+    "issued_at",
+    "expires_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.1.0"
+    },
+    "authorization_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "request_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "agent_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "requested_action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action_type",
+        "summary"
+      ],
+      "properties": {
+        "action_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$"
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "target_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$"
+        },
+        "target_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "parameters_digest": {
+          "type": "string",
+          "pattern": "^sha256:[A-Fa-f0-9]{64}$"
+        }
+      },
+      "dependentRequired": {
+        "target_type": [
+          "target_id"
+        ],
+        "target_id": [
+          "target_type"
+        ]
+      }
+    },
+    "decision": {
+      "type": "string",
+      "enum": [
+        "authorized",
+        "conditionally_authorized",
+        "human_review_required",
+        "deferred",
+        "denied",
+        "revoked"
+      ]
+    },
+    "decision_reason": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "summary",
+        "evidence_refs"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$"
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "evidence_refs": {
+          "type": "array",
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/reference"
+          }
+        }
+      }
+    },
+    "authorized_by": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "actor_type",
+        "actor_id",
+        "authority_basis"
+      ],
+      "properties": {
+        "actor_type": {
+          "type": "string",
+          "enum": [
+            "human",
+            "policy_engine",
+            "delegated_agent",
+            "system"
+          ]
+        },
+        "actor_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "authority_basis": {
+          "$ref": "#/$defs/reference"
+        },
+        "delegation_id": {
+          "$ref": "#/$defs/identifier"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "actor_type": {
+                "const": "delegated_agent"
+              }
+            },
+            "required": [
+              "actor_type"
+            ]
+          },
+          "then": {
+            "required": [
+              "delegation_id"
+            ]
+          }
+        }
+      ]
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$"
+    },
+    "reference": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 256,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/#-]*$"
+    }
+  }
+}
