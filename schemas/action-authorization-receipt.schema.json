@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:kazene:agent-action-authorization-receipt-protocol:action-authorization-receipt:0.1.0",
+  "$id": "urn:kazene:agent-action-authorization-receipt-protocol:action-authorization-receipt:0.2.0",
   "title": "Action Authorization Receipt",
-  "description": "A vendor-neutral receipt recording the decision that governs whether an AI agent action may proceed.",
+  "description": "A vendor-neutral receipt recording the decision, authorized scope, and enforceable constraints governing whether an AI agent action may proceed.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -14,12 +14,14 @@
     "decision",
     "decision_reason",
     "authorized_by",
+    "authorized_scope",
+    "constraints",
     "issued_at",
     "expires_at"
   ],
   "properties": {
     "schema_version": {
-      "const": "0.1.0"
+      "const": "0.2.0"
     },
     "authorization_id": {
       "$ref": "#/$defs/identifier"
@@ -39,24 +41,34 @@
       ],
       "properties": {
         "action_type": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$"
+          "$ref": "#/$defs/action_type"
         },
         "summary": {
           "type": "string",
           "minLength": 1,
           "maxLength": 1024
         },
+        "tool_id": {
+          "$ref": "#/$defs/identifier"
+        },
         "target_type": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$"
+          "$ref": "#/$defs/identifier"
         },
         "target_id": {
           "$ref": "#/$defs/identifier"
+        },
+        "destination_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "data_classes": {
+          "$ref": "#/$defs/identifier_array"
+        },
+        "estimated_cost": {
+          "$ref": "#/$defs/money"
+        },
+        "estimated_duration_seconds": {
+          "type": "integer",
+          "minimum": 0
         },
         "parameters_digest": {
           "type": "string",
@@ -93,10 +105,7 @@
       ],
       "properties": {
         "code": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$"
+          "$ref": "#/$defs/identifier"
         },
         "summary": {
           "type": "string",
@@ -104,12 +113,7 @@
           "maxLength": 2048
         },
         "evidence_refs": {
-          "type": "array",
-          "maxItems": 64,
-          "uniqueItems": true,
-          "items": {
-            "$ref": "#/$defs/reference"
-          }
+          "$ref": "#/$defs/reference_array"
         }
       }
     },
@@ -161,6 +165,74 @@
         }
       ]
     },
+    "authorized_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tools",
+        "resources",
+        "operations",
+        "data_classes"
+      ],
+      "properties": {
+        "tools": {
+          "$ref": "#/$defs/identifier_array"
+        },
+        "resources": {
+          "$ref": "#/$defs/identifier_array"
+        },
+        "operations": {
+          "$ref": "#/$defs/action_type_array"
+        },
+        "data_classes": {
+          "$ref": "#/$defs/identifier_array"
+        }
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maximum_cost",
+        "maximum_duration_seconds",
+        "allowed_destinations",
+        "prohibited_actions",
+        "execution_count"
+      ],
+      "properties": {
+        "maximum_cost": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/money"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "maximum_duration_seconds": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "allowed_destinations": {
+          "$ref": "#/$defs/identifier_array"
+        },
+        "prohibited_actions": {
+          "$ref": "#/$defs/action_type_array"
+        },
+        "execution_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
     "issued_at": {
       "type": "string",
       "format": "date-time"
@@ -189,6 +261,54 @@
       "minLength": 3,
       "maxLength": 256,
       "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/#-]*$"
+    },
+    "action_type": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$"
+    },
+    "money": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "currency",
+        "amount"
+      ],
+      "properties": {
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "amount": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]{1,6})?$"
+        }
+      }
+    },
+    "identifier_array": {
+      "type": "array",
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/identifier"
+      }
+    },
+    "action_type_array": {
+      "type": "array",
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/action_type"
+      }
+    },
+    "reference_array": {
+      "type": "array",
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/reference"
+      }
     }
   }
 }
