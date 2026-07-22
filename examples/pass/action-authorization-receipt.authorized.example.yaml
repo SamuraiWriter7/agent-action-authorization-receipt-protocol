@@ -1,47 +1,115 @@
-schema_version: "0.2.0"
+schema_version: "0.3.0"
 
-authorization_id: aar-20260722-0202
-request_id: req-disclosure-3008
-agent_id: agent-support-02
+authorization_id: aar-20260722-0301
+request_id: req-purchase-1042
+agent_id: agent-procurement-01
 
 requested_action:
-  action_type: customer_record.publish
-  summary: Publish a customer support record to an external collaboration space.
-  tool_id: tool-collaboration-api
-  target_type: customer_record
-  target_id: customer-record-8832
-  destination_id: external-workspace-09
+  action_type: purchase_order.create
+  summary: Create a purchase order for replacement safety gloves.
+  tool_id: tool-procurement-api
+  target_type: vendor_account
+  target_id: vendor-acme-industrial
+  destination_id: vendor-acme-industrial
   data_classes:
-    - customer.personal
-    - support.confidential
-  estimated_duration_seconds: 30
+    - procurement.non_personal
+  estimated_cost:
+    currency: JPY
+    amount: "8400"
+  estimated_duration_seconds: 120
+  parameters_digest: sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
-decision: denied
+decision: conditionally_authorized
 
 decision_reason:
-  code: external_disclosure_prohibited
-  summary: The requested destination and data classes are outside the authorized boundary.
+  code: human_approved_with_limits
+  summary: A human reviewer approved the purchase within the recorded cost, destination, operation, and execution limits.
   evidence_refs:
-    - policy:data-boundary-v2
+    - policy:procurement-limit-v3
+    - review:review-procurement-7781
+    - risk:risk-assessment-0301
 
 authorized_by:
-  actor_type: policy_engine
-  actor_id: policy-engine-main
-  authority_basis: policy:data-boundary-v2
+  actor_type: human
+  actor_id: user:operations-manager-07
+  authority_basis: delegation:procurement-2026-q3
 
 authorized_scope:
-  tools: []
-  resources: []
-  operations: []
-  data_classes: []
+  tools:
+    - tool-procurement-api
+  resources:
+    - vendor-acme-industrial
+  operations:
+    - purchase_order.create
+  data_classes:
+    - procurement.non_personal
 
 constraints:
-  maximum_cost: null
-  maximum_duration_seconds: null
-  allowed_destinations: []
+  maximum_cost:
+    currency: JPY
+    amount: "10000"
+  maximum_duration_seconds: 300
+  allowed_destinations:
+    - vendor-acme-industrial
   prohibited_actions:
-    - customer_record.publish
-  execution_count: 0
+    - purchase_order.delete
+    - vendor_account.modify
+  execution_count: 1
 
-issued_at: "2026-07-22T00:46:00Z"
-expires_at: null
+policy_bindings:
+  - policy_id: procurement-approval-policy
+    policy_version: v3
+    rule_id: human-review-over-5000-jpy
+    result: require_human_review
+    enforcement: applied
+    evaluated_by: policy-engine-main
+    evaluated_at: "2026-07-22T01:00:00Z"
+    override_authority_ref: null
+    evidence_refs:
+      - policy:procurement-limit-v3#human-review-over-5000-jpy
+
+  - policy_id: procurement-approval-policy
+    policy_version: v3
+    rule_id: purchase-limit-10000-jpy
+    result: constrain
+    enforcement: applied
+    evaluated_by: policy-engine-main
+    evaluated_at: "2026-07-22T01:00:01Z"
+    override_authority_ref: null
+    evidence_refs:
+      - policy:procurement-limit-v3#purchase-limit-10000-jpy
+
+human_review:
+  required: true
+  status: approved
+  review_id: review-procurement-7781
+  reviewer_id: user:operations-manager-07
+  reviewed_at: "2026-07-22T01:03:00Z"
+  rationale: The purchase is necessary, within budget, and limited to an approved vendor.
+  evidence_refs:
+    - delegation:procurement-2026-q3
+
+risk_assessment:
+  assessment_id: risk-assessment-0301
+  assessed_by: risk-engine-main
+  assessed_at: "2026-07-22T00:59:30Z"
+  risk_level: medium
+  score: 42
+  categories:
+    - financial.commitment
+    - external.transaction
+  mitigations:
+    - budget.cap
+    - approved.vendor
+    - single.execution
+  residual_risk_level: low
+
+context_bindings:
+  origin_reference: origin:request-origin-1042
+  trace_reference: trace:trace-20260722-8841
+  precedence_reference: precedence:procurement-action-v2
+  human_axis_reference: human-axis:operations-manager-control
+  handoff_reference: handoff:procurement-agent-handoff-77
+
+issued_at: "2026-07-22T01:04:00Z"
+expires_at: "2026-07-22T01:34:00Z"
