@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:kazene:agent-action-authorization-receipt-protocol:authorization-downstream-handoff:0.5.0",
+  "title": "Authorization Downstream Handoff",
+  "description": "An immutable handoff from authorization and execution evidence to audit, dispute, responsibility, and royalty systems.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_type",
+    "handoff_id",
+    "bridge_id",
+    "authorization_id",
+    "execution_evidence_ids",
+    "destinations",
+    "settlement_gate",
+    "emitted_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.5.0"
+    },
+    "record_type": {
+      "const": "authorization_downstream_handoff"
+    },
+    "handoff_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "bridge_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "authorization_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "execution_evidence_ids": {
+      "$ref": "#/$defs/identifier_array"
+    },
+    "destinations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "audit",
+        "dispute",
+        "responsibility",
+        "royalty"
+      ],
+      "properties": {
+        "audit": {
+          "$ref": "#/$defs/destination"
+        },
+        "dispute": {
+          "$ref": "#/$defs/destination"
+        },
+        "responsibility": {
+          "$ref": "#/$defs/destination"
+        },
+        "royalty": {
+          "$ref": "#/$defs/destination"
+        }
+      }
+    },
+    "settlement_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "reason_code",
+        "unresolved_dispute_refs"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "open",
+            "held",
+            "blocked",
+            "released"
+          ]
+        },
+        "reason_code": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "unresolved_dispute_refs": {
+          "$ref": "#/$defs/reference_array"
+        }
+      }
+    },
+    "emitted_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$"
+    },
+    "reference": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 512,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._~:/?#@!$&'()*+,;=%-]*$"
+    },
+    "identifier_array": {
+      "type": "array",
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/identifier"
+      }
+    },
+    "reference_array": {
+      "type": "array",
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/reference"
+      }
+    },
+    "destination": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "record_refs"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "not_applicable",
+            "pending",
+            "ready",
+            "completed",
+            "held",
+            "blocked"
+          ]
+        },
+        "record_refs": {
+          "$ref": "#/$defs/reference_array"
+        }
+      }
+    }
+  }
+}
