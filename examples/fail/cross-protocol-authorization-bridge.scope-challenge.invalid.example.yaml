@@ -1,0 +1,74 @@
+schema_version: "0.5.0"
+record_type: cross_protocol_authorization_bridge
+
+bridge_id: cpab-invalid-scope
+authorization_id: aar-20260722-0301
+
+protocol_binding:
+  protocol: mcp
+  protocol_version: "2025-11-25"
+  endpoint: https://mcp.example.com
+  operation: tools/call
+  capability_id: purchase_order.create
+  resource_indicator: https://mcp.example.com
+  agent_card_reference: null
+  http_method: null
+  extension_reference: null
+  security_scheme_refs:
+    - oauth-protected-resource:mcp.example.com
+  required_scopes:
+  - procurement.write
+
+authentication:
+  scheme: oauth2
+  credential_reference: vault:credential/mcp-procurement-session
+  requested_scopes:
+    - procurement.read
+  audience: https://mcp.example.com
+  issuer: https://identity.example.com
+
+authorization_projection:
+  source_decision: conditionally_authorized
+  projected_decision: allow_with_constraints
+  request_id: req-purchase-1042
+  agent_id: agent-procurement-01
+  action_type: purchase_order.create
+
+  scope_snapshot:
+    tools:
+      - tool-procurement-api
+    resources:
+      - vendor-acme-industrial
+    operations:
+      - purchase_order.create
+    data_classes:
+      - procurement.non_personal
+
+  constraint_snapshot:
+    maximum_cost:
+      currency: JPY
+      amount: "10000"
+    maximum_duration_seconds: 300
+    allowed_destinations:
+      - vendor-acme-industrial
+    prohibited_actions:
+      - purchase_order.delete
+      - vendor_account.modify
+    execution_count: 1
+
+  parameters_digest: sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  expires_at: "2026-07-22T01:34:00Z"
+
+transport_evidence:
+  status: completed
+  request_digest: sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  response_digest: sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+  response_code: 200
+  bound_at: "2026-07-22T01:12:00Z"
+  evidence_refs:
+    - mcp-request:exec-purchase-1042-01
+
+execution_evidence_ids:
+  - aee-20260722-0401
+
+created_at: "2026-07-22T01:12:05Z"
