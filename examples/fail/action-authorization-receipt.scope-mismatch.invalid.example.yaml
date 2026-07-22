@@ -1,0 +1,53 @@
+schema_version: "0.2.0"
+
+authorization_id: aar-20260722-invalid-scope
+request_id: req-invalid-scope
+agent_id: agent-procurement-01
+
+requested_action:
+  action_type: purchase_order.create
+  summary: Create a purchase order outside the authorized operation scope.
+  tool_id: tool-procurement-api
+  target_type: vendor_account
+  target_id: vendor-acme-industrial
+  destination_id: vendor-acme-industrial
+  data_classes:
+    - procurement.non_personal
+  estimated_cost:
+    currency: JPY
+    amount: "8000"
+
+decision: authorized
+
+decision_reason:
+  code: invalid_scope_test
+  summary: This example must fail because the operation is not authorized.
+  evidence_refs: []
+
+authorized_by:
+  actor_type: human
+  actor_id: user:operations-manager-07
+  authority_basis: delegation:procurement-2026-q3
+
+authorized_scope:
+  tools:
+    - tool-procurement-api
+  resources:
+    - vendor-acme-industrial
+  operations:
+    - purchase_order.read
+  data_classes:
+    - procurement.non_personal
+
+constraints:
+  maximum_cost:
+    currency: JPY
+    amount: "10000"
+  maximum_duration_seconds: 300
+  allowed_destinations:
+    - vendor-acme-industrial
+  prohibited_actions: []
+  execution_count: 1
+
+issued_at: "2026-07-22T00:47:00Z"
+expires_at: "2026-07-22T01:17:00Z"
