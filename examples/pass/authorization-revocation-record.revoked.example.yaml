@@ -1,0 +1,23 @@
+schema_version: "0.4.0"
+
+revocation_id: arr-20260722-0401
+authorization_id: aar-20260722-0301
+revocation_type: revoked
+
+initiated_by:
+  actor_type: human
+  actor_id: user:operations-manager-07
+  authority_basis: delegation:procurement-2026-q3
+  delegation_id: null
+
+reason:
+  code: vendor_status_changed
+  summary: The vendor account was suspended after the first authorized execution.
+  evidence_refs:
+    - trace:vendor-status-change-991
+
+issued_at: "2026-07-22T01:19:00Z"
+effective_at: "2026-07-22T01:20:00Z"
+
+superseding_authorization_id: null
+affected_execution_ids: []
