@@ -1,0 +1,89 @@
+schema_version: "0.3.0"
+
+authorization_id: aar-invalid-pending-review
+request_id: req-invalid-pending-review
+agent_id: agent-payment-01
+
+requested_action:
+  action_type: refund.issue
+  summary: Positive authorization incorrectly proceeds while human review remains pending.
+  tool_id: tool-payment-api
+  target_type: payment_transaction
+  target_id: payment-invalid-01
+  destination_id: customer-account-221
+  data_classes:
+    - payment.restricted
+
+decision: conditionally_authorized
+
+decision_reason:
+  code: invalid_pending_review
+  summary: This example must fail.
+  evidence_refs: []
+
+authorized_by:
+  actor_type: policy_engine
+  actor_id: policy-engine-main
+  authority_basis: policy:refund-policy-v4
+
+authorized_scope:
+  tools:
+    - tool-payment-api
+  resources:
+    - payment-invalid-01
+  operations:
+    - refund.issue
+  data_classes:
+    - payment.restricted
+
+constraints:
+  maximum_cost:
+    currency: JPY
+    amount: "20000"
+  maximum_duration_seconds: 120
+  allowed_destinations:
+    - customer-account-221
+  prohibited_actions: []
+  execution_count: 1
+
+policy_bindings:
+  - policy_id: refund-approval-policy
+    policy_version: v4
+    rule_id: human-review-over-10000-jpy
+    result: require_human_review
+    enforcement: applied
+    evaluated_by: policy-engine-main
+    evaluated_at: "2026-07-22T01:11:00Z"
+    override_authority_ref: null
+    evidence_refs: []
+
+human_review:
+  required: true
+  status: pending
+  review_id: review-invalid-pending
+  reviewer_id: null
+  reviewed_at: null
+  rationale: null
+  evidence_refs: []
+
+risk_assessment:
+  assessment_id: risk-invalid-pending
+  assessed_by: risk-engine-main
+  assessed_at: "2026-07-22T01:10:30Z"
+  risk_level: high
+  score: 76
+  categories:
+    - financial.commitment
+  mitigations:
+    - human.review
+  residual_risk_level: high
+
+context_bindings:
+  origin_reference: origin:req-invalid-pending-review
+  trace_reference: trace:req-invalid-pending-review
+  precedence_reference: null
+  human_axis_reference: human-axis:financial-review-control
+  handoff_reference: null
+
+issued_at: "2026-07-22T01:11:10Z"
+expires_at: "2026-07-22T02:11:10Z"
