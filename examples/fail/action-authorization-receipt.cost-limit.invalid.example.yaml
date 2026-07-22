@@ -1,0 +1,54 @@
+schema_version: "0.2.0"
+
+authorization_id: aar-20260722-invalid-cost
+request_id: req-invalid-cost
+agent_id: agent-procurement-01
+
+requested_action:
+  action_type: purchase_order.create
+  summary: Create a purchase order above the authorized cost limit.
+  tool_id: tool-procurement-api
+  target_type: vendor_account
+  target_id: vendor-acme-industrial
+  destination_id: vendor-acme-industrial
+  data_classes:
+    - procurement.non_personal
+  estimated_cost:
+    currency: JPY
+    amount: "12500"
+  estimated_duration_seconds: 120
+
+decision: conditionally_authorized
+
+decision_reason:
+  code: invalid_cost_test
+  summary: This example must fail because estimated cost exceeds the limit.
+  evidence_refs: []
+
+authorized_by:
+  actor_type: policy_engine
+  actor_id: policy-engine-main
+  authority_basis: policy:procurement-limit-v3
+
+authorized_scope:
+  tools:
+    - tool-procurement-api
+  resources:
+    - vendor-acme-industrial
+  operations:
+    - purchase_order.create
+  data_classes:
+    - procurement.non_personal
+
+constraints:
+  maximum_cost:
+    currency: JPY
+    amount: "10000"
+  maximum_duration_seconds: 300
+  allowed_destinations:
+    - vendor-acme-industrial
+  prohibited_actions: []
+  execution_count: 1
+
+issued_at: "2026-07-22T00:48:00Z"
+expires_at: "2026-07-22T01:18:00Z"
