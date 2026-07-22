@@ -36,6 +36,10 @@ jobs:
           python -m pip install \
             -r requirements-dev.txt
 
-      - name: Validate examples
+      - name: Validate authorization receipts
         run: |
           python scripts/validate_examples.py
+
+      - name: Validate execution and revocation records
+        run: |
+          python scripts/validate_execution_records.py
