@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:kazene:agent-action-authorization-receipt-protocol:authorization-revocation-record:0.4.0",
+  "title": "Authorization Revocation Record",
+  "description": "An immutable record that revokes, expires, or supersedes an authorization receipt.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "revocation_id",
+    "authorization_id",
+    "revocation_type",
+    "initiated_by",
+    "reason",
+    "issued_at",
+    "effective_at",
+    "superseding_authorization_id",
+    "affected_execution_ids"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.4.0"
+    },
+    "revocation_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "authorization_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "revocation_type": {
+      "type": "string",
+      "enum": [
+        "revoked",
+        "expired",
+        "superseded"
+      ]
+    },
+    "initiated_by": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "actor_type",
+        "actor_id",
+        "authority_basis"
+      ],
+      "properties": {
+        "actor_type": {
+          "type": "string",
+          "enum": [
+            "human",
+            "policy_engine",
+            "delegated_agent",
+            "system"
+          ]
+        },
+        "actor_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "authority_basis": {
+          "$ref": "#/$defs/reference"
+        },
+        "delegation_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "reason": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "summary",
+        "evidence_refs"
+      ],
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/identifier"
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "evidence_refs": {
+          "$ref": "#/$defs/reference_array"
+        }
+      }
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "effective_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "superseding_authorization_id": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/identifier"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "affected_execution_ids": {
+      "$ref": "#/$defs/identifier_array"
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$"
+    },
+    "reference": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 256,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/#-]*$"
+    },
+    "identifier_array": {
+      "type": "array",
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/identifier"
+      }
+    },
+    "reference_array": {
+      "type": "array",
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/reference"
+      }
+    }
+  }
+}
