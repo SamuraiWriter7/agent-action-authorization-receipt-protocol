@@ -1,0 +1,491 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:kazene:agent-action-authorization-receipt-protocol:cross-protocol-authorization-bridge:0.5.0",
+  "title": "Cross-Protocol Authorization Bridge",
+  "description": "An immutable record projecting an Action Authorization Receipt into an external or local execution protocol.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_type",
+    "bridge_id",
+    "authorization_id",
+    "protocol_binding",
+    "authorization_projection",
+    "transport_evidence",
+    "execution_evidence_ids",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.5.0"
+    },
+    "record_type": {
+      "const": "cross_protocol_authorization_bridge"
+    },
+    "bridge_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "authorization_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "protocol_binding": {
+      "$ref": "#/$defs/protocol_binding"
+    },
+    "authorization_projection": {
+      "$ref": "#/$defs/authorization_projection"
+    },
+    "transport_evidence": {
+      "$ref": "#/$defs/transport_evidence"
+    },
+    "execution_evidence_ids": {
+      "$ref": "#/$defs/identifier_array"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$"
+    },
+    "reference": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 512,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._~:/?#@!$&'()*+,;=%-]*$"
+    },
+    "version_identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "scope_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$"
+    },
+    "identifier_array": {
+      "type": "array",
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/identifier"
+      }
+    },
+    "reference_array": {
+      "type": "array",
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/reference"
+      }
+    },
+    "scope_array": {
+      "type": "array",
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/scope_name"
+      }
+    },
+    "money": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "currency",
+        "amount"
+      ],
+      "properties": {
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "amount": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]{1,6})?$"
+        }
+      }
+    },
+    "authentication": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scheme",
+        "credential_reference",
+        "requested_scopes",
+        "audience",
+        "issuer"
+      ],
+      "properties": {
+        "scheme": {
+          "type": "string",
+          "enum": [
+            "oauth2",
+            "oidc",
+            "api_key",
+            "mtls",
+            "bearer",
+            "none",
+            "custom"
+          ]
+        },
+        "credential_reference": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "requested_scopes": {
+          "$ref": "#/$defs/scope_array"
+        },
+        "audience": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "issuer": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "protocol_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocol",
+        "protocol_version",
+        "endpoint",
+        "operation",
+        "capability_id",
+        "resource_indicator",
+        "agent_card_reference",
+        "http_method",
+        "extension_reference",
+        "security_scheme_refs",
+        "required_scopes",
+        "authentication"
+      ],
+      "properties": {
+        "protocol": {
+          "type": "string",
+          "enum": [
+            "mcp",
+            "a2a",
+            "http_api",
+            "local_agent",
+            "custom"
+          ]
+        },
+        "protocol_version": {
+          "$ref": "#/$defs/version_identifier"
+        },
+        "endpoint": {
+          "$ref": "#/$defs/reference"
+        },
+        "operation": {
+          "$ref": "#/$defs/identifier"
+        },
+        "capability_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "resource_indicator": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "agent_card_reference": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "http_method": {
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": [
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH",
+                "DELETE",
+                "OPTIONS",
+                "HEAD"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "extension_reference": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/reference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "security_scheme_refs": {
+          "$ref": "#/$defs/reference_array"
+        },
+        "required_scopes": {
+          "$ref": "#/$defs/scope_array"
+        },
+        "authentication": {
+          "$ref": "#/$defs/authentication"
+        }
+      }
+    },
+    "scope_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tools",
+        "resources",
+        "operations",
+        "data_classes"
+      ],
+      "properties": {
+        "tools": {
+          "$ref": "#/$defs/identifier_array"
+        },
+        "resources": {
+          "$ref": "#/$defs/identifier_array"
+        },
+        "operations": {
+          "$ref": "#/$defs/identifier_array"
+        },
+        "data_classes": {
+          "$ref": "#/$defs/identifier_array"
+        }
+      }
+    },
+    "constraint_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maximum_cost",
+        "maximum_duration_seconds",
+        "allowed_destinations",
+        "prohibited_actions",
+        "execution_count"
+      ],
+      "properties": {
+        "maximum_cost": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/money"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "maximum_duration_seconds": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "allowed_destinations": {
+          "$ref": "#/$defs/identifier_array"
+        },
+        "prohibited_actions": {
+          "$ref": "#/$defs/identifier_array"
+        },
+        "execution_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "authorization_projection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_decision",
+        "projected_decision",
+        "request_id",
+        "agent_id",
+        "action_type",
+        "scope_snapshot",
+        "constraint_snapshot",
+        "parameters_digest",
+        "expires_at"
+      ],
+      "properties": {
+        "source_decision": {
+          "type": "string",
+          "enum": [
+            "authorized",
+            "conditionally_authorized",
+            "human_review_required",
+            "deferred",
+            "denied",
+            "revoked"
+          ]
+        },
+        "projected_decision": {
+          "type": "string",
+          "enum": [
+            "allow",
+            "allow_with_constraints",
+            "human_challenge",
+            "defer",
+            "deny",
+            "revoke"
+          ]
+        },
+        "request_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "agent_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "action_type": {
+          "$ref": "#/$defs/identifier"
+        },
+        "scope_snapshot": {
+          "$ref": "#/$defs/scope_snapshot"
+        },
+        "constraint_snapshot": {
+          "$ref": "#/$defs/constraint_snapshot"
+        },
+        "parameters_digest": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^sha256:[A-Fa-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expires_at": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "transport_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "request_digest",
+        "response_digest",
+        "response_code",
+        "bound_at",
+        "evidence_refs"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "prepared",
+            "dispatched",
+            "completed",
+            "blocked",
+            "failed"
+          ]
+        },
+        "request_digest": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^sha256:[A-Fa-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "response_digest": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^sha256:[A-Fa-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "response_code": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 599
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "bound_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "evidence_refs": {
+          "$ref": "#/$defs/reference_array"
+        }
+      }
+    }
+  }
+}
