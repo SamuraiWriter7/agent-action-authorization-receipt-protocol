@@ -1,0 +1,64 @@
+schema_version: "0.5.0"
+record_type: cross_protocol_authorization_bridge
+
+bridge_id: cpab-20260722-0502
+authorization_id: aar-20260722-0303
+
+protocol_binding:
+  protocol: a2a
+  protocol_version: "1.0"
+  endpoint: https://finance-agent.example.com/a2a
+  operation: message/send
+  capability_id: refund.issue
+  resource_indicator: null
+  agent_card_reference: https://finance-agent.example.com/.well-known/agent-card.json
+  http_method: null
+  extension_reference: null
+  security_scheme_refs:
+    - agent-card:security:oauth2
+  required_scopes:
+    - refund.request
+  authentication:
+    scheme: oauth2
+    credential_reference: vault:credential/a2a-finance-session
+    requested_scopes:
+      - refund.request
+    audience: https://finance-agent.example.com/a2a
+    issuer: https://identity.example.com
+
+authorization_projection:
+  source_decision: human_review_required
+  projected_decision: human_challenge
+  request_id: req-refund-5510
+  agent_id: agent-support-02
+  action_type: refund.issue
+
+  scope_snapshot:
+    tools: []
+    resources: []
+    operations: []
+    data_classes: []
+
+  constraint_snapshot:
+    maximum_cost: null
+    maximum_duration_seconds: null
+    allowed_destinations: []
+    prohibited_actions:
+      - refund.issue
+    execution_count: 0
+
+  parameters_digest: null
+  expires_at: "2026-07-22T03:06:10Z"
+
+transport_evidence:
+  status: blocked
+  request_digest: sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+  response_digest: sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+  response_code: 403
+  bound_at: "2026-07-22T01:06:20Z"
+  evidence_refs:
+    - review-queue:review-refund-5510
+
+execution_evidence_ids: []
+
+created_at: "2026-07-22T01:06:21Z"
