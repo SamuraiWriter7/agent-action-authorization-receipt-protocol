@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate protocol examples against schema and semantic rules."""
+"""Validate Action Authorization Receipt examples."""
 
 from __future__ import annotations
 
@@ -25,6 +25,8 @@ SCHEMA_PATH = (
 
 PASS_DIR = ROOT / "examples" / "pass"
 FAIL_DIR = ROOT / "examples" / "fail"
+
+EXAMPLE_PREFIX = "action-authorization-receipt."
 
 POSITIVE_DECISIONS = {
     "authorized",
@@ -94,7 +96,7 @@ def schema_errors(
 
 
 def parse_timestamp(value: str) -> datetime:
-    """Parse a timezone-aware timestamp."""
+    """Parse a timezone-aware RFC 3339-style timestamp."""
     parsed = datetime.fromisoformat(
         value.replace("Z", "+00:00")
     )
@@ -164,6 +166,7 @@ def policy_semantic_errors(
 
         enforcement = binding.get("enforcement")
         result = binding.get("result")
+
         override_ref = binding.get(
             "override_authority_ref"
         )
@@ -353,7 +356,8 @@ def risk_semantic_errors(
     errors: list[str] = []
 
     risk_level = assessment.get("risk_level")
-    residual = assessment.get(
+
+    residual_risk_level = assessment.get(
         "residual_risk_level"
     )
 
@@ -364,8 +368,8 @@ def risk_semantic_errors(
 
     if (
         risk_level in RISK_ORDER
-        and residual in RISK_ORDER
-        and RISK_ORDER[residual]
+        and residual_risk_level in RISK_ORDER
+        and RISK_ORDER[residual_risk_level]
         > RISK_ORDER[risk_level]
     ):
         errors.append(
@@ -375,7 +379,7 @@ def risk_semantic_errors(
 
     if (
         decision in POSITIVE_DECISIONS
-        and residual == "critical"
+        and residual_risk_level == "critical"
     ):
         errors.append(
             "positive decisions cannot retain "
@@ -384,7 +388,7 @@ def risk_semantic_errors(
 
     if (
         decision in POSITIVE_DECISIONS
-        and residual == "high"
+        and residual_risk_level == "high"
     ):
         if review.get("status") != "approved":
             errors.append(
@@ -446,9 +450,19 @@ def semantic_errors(
 
     if isinstance(authority, dict):
         actor_type = authority.get("actor_type")
+
         delegation_id = authority.get(
             "delegation_id"
         )
+
+        if (
+            actor_type == "delegated_agent"
+            and delegation_id is None
+        ):
+            errors.append(
+                "authorized_by.delegation_id is required "
+                "for delegated_agent"
+            )
 
         if (
             actor_type != "delegated_agent"
@@ -464,11 +478,12 @@ def semantic_errors(
     scope = document.get("authorized_scope")
     constraints = document.get("constraints")
     review = document.get("human_review")
+
     assessment = document.get(
         "risk_assessment"
     )
 
-    objects = (
+    required_objects = (
         action,
         scope,
         constraints,
@@ -478,13 +493,14 @@ def semantic_errors(
 
     if not all(
         isinstance(value, dict)
-        for value in objects
+        for value in required_objects
     ):
         return errors
 
     action_type = action.get("action_type")
     tool_id = action.get("tool_id")
     target_id = action.get("target_id")
+
     destination_id = action.get(
         "destination_id"
     )
@@ -703,11 +719,21 @@ def semantic_errors(
 
 def example_files(
     directory: Path,
+    prefix: str,
 ) -> list[Path]:
-    """Return supported examples in deterministic order."""
-    files = list(directory.glob("*.yaml"))
-    files.extend(directory.glob("*.yml"))
-    files.extend(directory.glob("*.json"))
+    """Return matching example files in deterministic order."""
+    files: list[Path] = []
+
+    for pattern in (
+        "*.yaml",
+        "*.yml",
+        "*.json",
+    ):
+        files.extend(
+            directory.glob(
+                f"{prefix}{pattern}"
+            )
+        )
 
     return sorted(files)
 
@@ -744,6 +770,13 @@ def validate_expected_pass(
         return False
 
     print("[schema-ok]")
+
+    if not isinstance(document, dict):
+        print(
+            "[semantic-error] "
+            "document root must be an object"
+        )
+        return False
 
     semantic = semantic_errors(document)
 
@@ -788,7 +821,9 @@ def validate_expected_fail(
     semantic = (
         semantic_errors(document)
         if isinstance(document, dict)
-        else []
+        else [
+            "document root must be an object"
+        ]
     )
 
     if not errors and not semantic:
@@ -813,7 +848,7 @@ def validate_expected_fail(
 
 
 def main() -> int:
-    """Run all validation checks."""
+    """Run all Action Authorization Receipt validation checks."""
     print(
         "=== Agent Action Authorization "
         "Receipt Protocol Validation ==="
@@ -825,6 +860,7 @@ def main() -> int:
 
     try:
         schema = load_document(SCHEMA_PATH)
+
         Draft202012Validator.check_schema(
             schema
         )
@@ -845,18 +881,27 @@ def main() -> int:
         format_checker=FormatChecker(),
     )
 
-    pass_files = example_files(PASS_DIR)
-    fail_files = example_files(FAIL_DIR)
+    pass_files = example_files(
+        PASS_DIR,
+        EXAMPLE_PREFIX,
+    )
+
+    fail_files = example_files(
+        FAIL_DIR,
+        EXAMPLE_PREFIX,
+    )
 
     if not pass_files:
         print(
-            "[fatal] no passing examples found"
+            "[fatal] no passing authorization "
+            "receipt examples found"
         )
         return 1
 
     if not fail_files:
         print(
-            "[fatal] no failing examples found"
+            "[fatal] no failing authorization "
+            "receipt examples found"
         )
         return 1
 
