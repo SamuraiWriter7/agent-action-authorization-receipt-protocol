@@ -1,0 +1,169 @@
+{
+  "version": "0.6.0",
+  "scope": "synthetic authorization projection; not cryptographic verification",
+  "defaults": {
+    "operation": "replace_blade",
+    "old_blade": "blade-a",
+    "new_blade": "blade-b",
+    "requester": "operator",
+    "approver": "safety-gate",
+    "authorized": true,
+    "independent_approval": true,
+    "old_lease_revoked": true,
+    "replacement_signed": true,
+    "scope_within_old": true,
+    "trace_verified": true,
+    "recovery_reviewed": true,
+    "post_swap_health": true,
+    "recovery_authorized": true,
+    "attacker_has_authority": false,
+    "execution_requested": true
+  },
+  "cases": [
+    {
+      "id": "valid-replacement",
+      "changes": {},
+      "expected": "PASS"
+    },
+    {
+      "id": "valid-held-review",
+      "changes": {
+        "execution_requested": false,
+        "recovery_authorized": false
+      },
+      "expected": "PASS"
+    },
+    {
+      "id": "valid-no-op",
+      "changes": {
+        "operation": "observe",
+        "execution_requested": false,
+        "recovery_authorized": false
+      },
+      "expected": "PASS"
+    },
+    {
+      "id": "fail-self-approval",
+      "changes": {
+        "approver": "operator"
+      },
+      "expected": "FAIL"
+    },
+    {
+      "id": "fail-no-authorization",
+      "changes": {
+        "authorized": false
+      },
+      "expected": "FAIL"
+    },
+    {
+      "id": "fail-no-independent-review",
+      "changes": {
+        "independent_approval": false
+      },
+      "expected": "FAIL"
+    },
+    {
+      "id": "fail-stale-lease",
+      "changes": {
+        "old_lease_revoked": false
+      },
+      "expected": "FAIL"
+    },
+    {
+      "id": "fail-unsigned-replacement",
+      "changes": {
+        "replacement_signed": false
+      },
+      "expected": "FAIL"
+    },
+    {
+      "id": "fail-authority-escalation",
+      "changes": {
+        "scope_within_old": false
+      },
+      "expected": "FAIL"
+    },
+    {
+      "id": "fail-trace-corrupt",
+      "changes": {
+        "trace_verified": false
+      },
+      "expected": "FAIL"
+    },
+    {
+      "id": "fail-no-recovery-review",
+      "changes": {
+        "recovery_reviewed": false
+      },
+      "expected": "FAIL"
+    },
+    {
+      "id": "fail-unhealthy-replacement",
+      "changes": {
+        "post_swap_health": false
+      },
+      "expected": "FAIL"
+    },
+    {
+      "id": "fail-no-recovery-authorization",
+      "changes": {
+        "recovery_authorized": false
+      },
+      "expected": "FAIL"
+    },
+    {
+      "id": "fail-attacker-authority",
+      "changes": {
+        "attacker_has_authority": true
+      },
+      "expected": "FAIL"
+    },
+    {
+      "id": "fail-empty-approver",
+      "changes": {
+        "approver": ""
+      },
+      "expected": "FAIL"
+    },
+    {
+      "id": "fail-same-blade",
+      "changes": {
+        "new_blade": "blade-a"
+      },
+      "expected": "FAIL"
+    },
+    {
+      "id": "fail-execute-during-hold",
+      "changes": {
+        "authorized": false,
+        "execution_requested": true
+      },
+      "expected": "FAIL"
+    },
+    {
+      "id": "fail-unapproved-recovery",
+      "changes": {
+        "recovery_reviewed": false,
+        "recovery_authorized": true
+      },
+      "expected": "FAIL"
+    },
+    {
+      "id": "fail-scope-inheritance",
+      "changes": {
+        "scope_within_old": false,
+        "old_lease_revoked": true
+      },
+      "expected": "FAIL"
+    },
+    {
+      "id": "fail-no-signature-while-executing",
+      "changes": {
+        "replacement_signed": false,
+        "execution_requested": true
+      },
+      "expected": "FAIL"
+    }
+  ]
+}
